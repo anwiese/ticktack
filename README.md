@@ -2,6 +2,8 @@
 
 Ein kindgerechtes Lernspiel zum Ablesen analoger Uhren, entwickelt mit PHP und reinem HTML/CSS/SVG – ohne Datenbank, ohne Framework.
 
+![Screenshot](screenshot.png)
+
 ## Features
 
 - **3 Schwierigkeitsgrade**
