@@ -1,5 +1,9 @@
 # Ticktack – Uhr lesen lernen
 
+![W3C Valid](https://img.shields.io/badge/W3C-valid-brightgreen?logo=w3c)
+[![License: MIT](https://img.shields.io/github/license/anwiese/ticktack)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-8.0%2B-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+
 Ein kindgerechtes Lernspiel zum Ablesen analoger Uhren, entwickelt mit PHP und reinem HTML/CSS/SVG – ohne Datenbank, ohne Framework.
 
 ![Screenshot](screenshot.png)
