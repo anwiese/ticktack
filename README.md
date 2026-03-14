@@ -6,10 +6,11 @@ Ein kindgerechtes Lernspiel zum Ablesen analoger Uhren, entwickelt mit PHP und r
 
 ## Features
 
-- **3 Schwierigkeitsgrade**
-  - **Einfach** – volle Stunden, viertel nach, halb, viertel vor
-  - **Mittel** – alle 5-Minuten-Schritte (z. B. „5 vor halb 7", „10 nach 4")
-  - **Schwer** – wie Mittel, aber die analoge Uhr zeigt nur 12, 3, 6 und 9
+- **4 Schwierigkeitsgrade**
+  - **Anfänger** – volle Stunden, viertel nach, halb, viertel vor
+  - **Leicht** – alle 5-Minuten-Schritte (z. B. „5 vor halb 7", „10 nach 4")
+  - **Mittel** – wie Leicht, aber die analoge Uhr zeigt nur 12, 3, 6 und 9
+  - **Schwer** – wie Mittel, aber gefragt wird die Uhrzeit in einer Viertelstunde, einer halben Stunde oder einer Stunde
 - Analoge SVG-Uhr mit Stunden- und Minutenzeiger
 - 4 Antwortoptionen zum Antippen (Multiple Choice)
 - Punktestand & Fehlerzähler pro Session
