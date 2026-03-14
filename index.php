@@ -775,9 +775,9 @@ unset($_SESSION['milestone_animal']);
 <script>
 twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"
         crossorigin="anonymous"
-        integrity="sha384-0esPaJH+F9evp2lsJYN36SW7XkRbaYviuyF+PpnbjDXBC9i1CWGiJyGrXCyiyGqZ"></script>
+        integrity="sha384-JSZXO0kKYHTylAsDYTb+7Kg2eUyalm19b8Pydcdf8sQ1cCKYZr9lLahoKT9+LFY5"></script>
 <?php if ($lastResult === 'correct'): ?>
 <script>
 (function () {
