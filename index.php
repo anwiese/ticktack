@@ -21,12 +21,13 @@ $levelLocked = [
     1 => true,
     2 => false,
     3 => false,
+    4 => false,
 ];
 
 // Level setzen
 if (isset($_GET['setlevel'])) {
     $lvl = (int)$_GET['setlevel'];
-    if (($lvl === 1 || $lvl === 2 || $lvl === 3) && !($levelLocked[$lvl] ?? true)) {
+    if (($lvl === 1 || $lvl === 2 || $lvl === 3 || $lvl === 4) && !($levelLocked[$lvl] ?? true)) {
         $_SESSION['level']    = $lvl;
         $_SESSION['score']    = 0;
         $_SESSION['errors']   = 0;
@@ -101,7 +102,7 @@ function timeToGermanL2(int $hour, int $minute): string {
 }
 
 function timeToGerman(int $hour, int $minute, int $level): string {
-    return ($level === 2 || $level === 3)
+    return ($level === 2 || $level === 3 || $level === 4)
         ? timeToGermanL2($hour, $minute)
         : timeToGermanL1($hour, $minute);
 }
@@ -111,7 +112,7 @@ function timeToGerman(int $hour, int $minute, int $level): string {
  */
 function generateOptions(int $correctHour, int $correctMinute, int $level): array {
     $correctText = timeToGerman($correctHour, $correctMinute, $level);
-    $allMinutes  = ($level === 2 || $level === 3)
+    $allMinutes  = ($level === 2 || $level === 3 || $level === 4)
         ? [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
         : [0, 15, 30, 45];
 
@@ -267,9 +268,10 @@ if ($level === null) {
     <div class="level-grid">
         <?php
         $levels = [
-            1 => ['title' => 'Einfach', 'desc' => 'Volle Stunden, viertel nach, halb, viertel vor'],
-            2 => ['title' => 'Mittel',  'desc' => 'Alle 5-Minuten-Schritte, z.&nbsp;B. „5 vor halb 7", „10 nach 4"'],
-            3 => ['title' => 'Schwer',  'desc' => 'Wie Mittel, aber die Uhr zeigt nur 12, 3, 6 und 9'],
+            1 => ['title' => 'Anfänger',       'desc' => 'Volle Stunden, viertel nach, halb, viertel vor'],
+            2 => ['title' => 'Leicht',          'desc' => 'Alle 5-Minuten-Schritte, z.&nbsp;B. „5 vor halb 7", „10 nach 4"'],
+            3 => ['title' => 'Mittel',          'desc' => 'Wie Leicht, aber die Uhr zeigt nur 12, 3, 6 und 9'],
+            4 => ['title' => 'Schwer',          'desc' => 'Wie Mittel – aber was zeigt die Uhr in einer Viertelstunde, einer halben Stunde oder einer Stunde?'],
         ];
         foreach ($levels as $lv => $info):
             $locked = $levelLocked[$lv] ?? false;
@@ -303,21 +305,41 @@ $lastResult = $_SESSION['last_result'] ?? null;
 $lastAnswer = $_SESSION['last_answer'] ?? '';
 $correctText = '';
 
-$allMinutes = ($level === 2 || $level === 3)
+$allMinutes = ($level === 2 || $level === 3 || $level === 4)
     ? [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
     : [0, 15, 30, 45];
 
 if ($answered) {
-    $hour        = $_SESSION['q_hour'];
-    $minute      = $_SESSION['q_minute'];
-    $correctText = $_SESSION['correct_text'];
-    $options     = $_SESSION['q_options'];
+    $hour           = $_SESSION['q_hour'];
+    $minute         = $_SESSION['q_minute'];
+    $correctText    = $_SESSION['correct_text'];
+    $options        = $_SESSION['q_options'];
+    $offsetLabel    = $_SESSION['q_offset_label'] ?? '';
 } else {
     $hour   = rand(1, 12);
     $minute = $allMinutes[array_rand($allMinutes)];
+    $offsetLabel = '';
 
-    $correctText = timeToGerman($hour, $minute, $level);
-    $options     = generateOptions($hour, $minute, $level);
+    if ($level === 4) {
+        $offsets     = [15, 30, 60];
+        $offset      = $offsets[array_rand($offsets)];
+        $offsetLabel = match($offset) {
+            15 => 'einer Viertelstunde',
+            30 => 'einer halben Stunde',
+            60 => 'einer Stunde',
+        };
+        $totalMinutes = $hour * 60 + $minute + $offset;
+        $targetHour   = (int)($totalMinutes / 60) % 12;
+        if ($targetHour === 0) $targetHour = 12;
+        $targetMinute = $totalMinutes % 60;
+        $correctText  = timeToGerman($targetHour, $targetMinute, $level);
+        $options      = generateOptions($targetHour, $targetMinute, $level);
+        $_SESSION['q_offset_label'] = $offsetLabel;
+    } else {
+        $correctText = timeToGerman($hour, $minute, $level);
+        $options     = generateOptions($hour, $minute, $level);
+        $_SESSION['q_offset_label'] = '';
+    }
 
     $_SESSION['q_hour']       = $hour;
     $_SESSION['q_minute']     = $minute;
@@ -666,7 +688,13 @@ unset($_SESSION['milestone_animal']);
     </svg>
 </div>
 
-<p class="question">Wie viel Uhr ist es?</p>
+<p class="question">
+<?php if ($level === 4): ?>
+    Wie viel Uhr ist es in <?= e($offsetLabel) ?>?
+<?php else: ?>
+    Wie viel Uhr ist es?
+<?php endif; ?>
+</p>
 
 <?php if ($answered): ?>
     <?php if ($lastResult === 'correct'): ?>
