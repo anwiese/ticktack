@@ -4,9 +4,28 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Reset
+// Reset (Score + Level)
 if (isset($_GET['reset'])) {
+    session_unset();
     session_destroy();
+    session_start();
+    session_regenerate_id(true);
+    header('Location: index.php');
+    exit;
+}
+
+// Level wechseln (Score bleibt erhalten)
+if (isset($_GET['changelevel'])) {
+    $score  = $_SESSION['score']  ?? 0;
+    $errors = $_SESSION['errors'] ?? 0;
+    $animals = $_SESSION['collected_animals'] ?? [];
+    session_unset();
+    session_destroy();
+    session_start();
+    session_regenerate_id(true);
+    $_SESSION['score']            = $score;
+    $_SESSION['errors']           = $errors;
+    $_SESSION['collected_animals'] = $animals;
     header('Location: index.php');
     exit;
 }
@@ -28,12 +47,15 @@ $levelLocked = [
 if (isset($_GET['setlevel'])) {
     $lvl = (int)$_GET['setlevel'];
     if (($lvl === 1 || $lvl === 2 || $lvl === 3 || $lvl === 4) && !($levelLocked[$lvl] ?? true)) {
-        $_SESSION['level']    = $lvl;
-        $_SESSION['score']    = 0;
-        $_SESSION['errors']   = 0;
-        $_SESSION['answered'] = false;
+        $_SESSION['level']       = $lvl;
+        $_SESSION['answered']    = false;
         $_SESSION['last_result'] = null;
         $_SESSION['last_answer'] = '';
+        unset($_SESSION['q_hour'], $_SESSION['q_minute'], $_SESSION['correct_text'],
+              $_SESSION['q_options'], $_SESSION['q_offset_label']);
+        // Score & Fehler nur beim echten Neustart zurücksetzen (via ?reset=1)
+        if (!isset($_SESSION['score']))  $_SESSION['score']  = 0;
+        if (!isset($_SESSION['errors'])) $_SESSION['errors'] = 0;
     }
     header('Location: index.php');
     exit;
@@ -175,6 +197,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // --- Kein Level gewählt → Level-Auswahl anzeigen ---
 $level = $_SESSION['level'] ?? null;
+if ($level !== null && !in_array($level, [1, 2, 3, 4], true)) {
+    $level = null;
+    unset($_SESSION['level']);
+}
 
 if ($level === null) {
     // Nur Level-Auswahl-Seite rendern
@@ -316,7 +342,7 @@ if ($answered) {
     $options        = $_SESSION['q_options'];
     $offsetLabel    = $_SESSION['q_offset_label'] ?? '';
 } else {
-    $hour   = rand(1, 12);
+    $hour   = random_int(1, 12);
     $minute = $allMinutes[array_rand($allMinutes)];
     $offsetLabel = '';
 
@@ -617,7 +643,7 @@ unset($_SESSION['milestone_animal']);
 
 <?php if ($milestoneAnimal): ?>
 <div class="animal-overlay" id="animalOverlay" onclick="document.getElementById('animalOverlay').remove()">
-    <div class="animal-emoji"><?= $milestoneAnimal ?></div>
+    <div class="animal-emoji"><?= e($milestoneAnimal) ?></div>
     <div class="animal-label"><span class="label-emoji">&#x1F389;</span> <?= $score ?> Punkte! Weiter so!</div>
     <div class="animal-hint">Antippen zum Weiterspielen</div>
 </div>
@@ -732,7 +758,7 @@ unset($_SESSION['milestone_animal']);
     <div class="animal-collection-label">Meine Tiere &#x1F3C6;</div>
     <div class="animal-collection-row">
         <?php foreach ($collectedAnimals as $a): ?>
-        <span class="animal-chip"><?= $a ?></span>
+        <span class="animal-chip"><?= e($a) ?></span>
         <?php endforeach; ?>
     </div>
 </div>
@@ -740,14 +766,18 @@ unset($_SESSION['milestone_animal']);
 
 <div class="bottom-links">
     <a href="index.php?reset=1" class="reset-link">Neu starten (Punkte zurücksetzen)</a>
-    <a href="index.php?reset=1" class="reset-link" style="color:#3b9de8">Level wechseln</a>
+    <a href="index.php?changelevel=1" class="reset-link" style="color:#3b9de8">Level wechseln</a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js"
+        crossorigin="anonymous"
+        integrity="sha384-32KMvAMS4DUBcQtHG6fzADguo/tpN1Nh6BAJa2QqZc6/i0K+YPQE+bWiqBRAWuFs"></script>
 <script>
 twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"
+        crossorigin="anonymous"
+        integrity="sha384-0esPaJH+F9evp2lsJYN36SW7XkRbaYviuyF+PpnbjDXBC9i1CWGiJyGrXCyiyGqZ"></script>
 <?php if ($lastResult === 'correct'): ?>
 <script>
 (function () {
